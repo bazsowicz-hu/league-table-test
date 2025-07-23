@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sortable League Table</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #2c3e50);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .table-container {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        thead {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        th {
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.3s;
+        }
+
+        th:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        th.sortable::after {
+            content: "↕";
+            position: absolute;
+            right: 15px;
+            opacity: 0.5;
+            font-size: 0.9rem;
+        }
+
+        th.sort-asc::after {
+            content: "↑";
+            opacity: 1;
+            color: #4CAF50;
+        }
+
+        th.sort-desc::after {
+            content: "↓";
+            opacity: 1;
+            color: #f44336;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        td {
+            padding: 15px;
+            font-size: 1rem;
+        }
+
+        .team-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .team-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #3498db, #8e44ad);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        .position {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+        }
+
+        .pos-1 .position {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+        }
+
+        .pos-2 .position {
+            background: linear-gradient(45deg, #C0C0C0, #A9A9A9);
+        }
+
+        .pos-3 .position {
+            background: linear-gradient(45deg, #CD7F32, #A0522D);
+        }
+
+        .points {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .form-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            text-align: center;
+            line-height: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 3px;
+        }
+
+        .form-w {
+            background: #4CAF50;
+        }
+
+        .form-d {
+            background: #FFC107;
+            color: #333;
+        }
+
+        .form-l {
+            background: #f44336;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border-radius: 30px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .add-team {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .add-team:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            th, td {
+                padding: 12px 8px;
+                font-size: 0.9rem;
+            }
+            
+            .team-cell {
+                gap: 8px;
+            }
+            
+            .team-logo {
+                width: 30px;
+                height: 30px;
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            th, td {
+                padding: 10px 5px;
+                font-size: 0.8rem;
+            }
+            
+            .position {
+                width: 25px;
+                height: 25px;
+                line-height: 25px;
+                font-size: 0.8rem;
+            }
+            
+            .points {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Premier League Table</h1>
+            <p class="subtitle">Sortable league standings with real-time updates. Click on any column header to sort the table.</p>
+        </header>
+        
+        <div class="controls">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search teams...">
+            </div>
+            <button class="add-team" id="addTeamBtn">
+                <i class="fas fa-plus"></i> Add New Team
+            </button>
+        </div>
+        
+        <div class="table-container">
+            <table id="leagueTable">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="position">Position</th>
+                        <th class="sortable" data-sort="team">Team</th>
+                        <th class="sortable" data-sort="played">Played</th>
+                        <th class="sortable" data-sort="won">Won</th>
+                        <th class="sortable" data-sort="drawn">Drawn</th>
+                        <th class="sortable" data-sort="lost">Lost</th>
+                        <th class="sortable" data-sort="points">Points</th>
+                        <th class="sortable" data-sort="form">Form</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Table rows will be generated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <footer>
+            <p>Sortable League Table &copy; 2023 | Click on column headers to sort</p>
+        </footer>
+    </div>
+
+    <script>
+        // Sample data for league table
+		const teams = [
+  { position: 1, team: "Arsenal", played: 32, won: 23, drawn: 4, lost: 5, points: 73, form: "WLWWW" },
+  { position: 2, team: "Chelsea", played: 32, won: 11, drawn: 9, lost: 12, points: 67, form: "LDDLD" },
+  { position: 3, team: "Liverpool", played: 32, won: 18, drawn: 8, lost: 6, points: 62, form: "WWDDL" },
+  { position: 4, team: "Aston Villa", played: 32, won: 17, drawn: 6, lost: 9, points: 57, form: "WLWLD" },
+  { position: 5, team: "Newcastle United", played: 32, won: 19, drawn: 8, lost: 5, points: 56, form: "DWLWD" },
+  { position: 6, team: "Tottenham", played: 32, won: 17, drawn: 5, lost: 10, points: 56, form: "LWWLD" },
+  { position: 7, team: "Brentford", played: 32, won: 14, drawn: 10, lost: 8, points: 52, form: "DWDWL" },
+  { position: 8, team: "Manchester United", played: 32, won: 20, drawn: 4, lost: 8, points: 45, form: "WLDWW" },
+  { position: 9, team: "Manchester City", played: 32, won: 25, drawn: 3, lost: 4, points: 45, form: "WWLWW" },
+  { position: 10, team: "Fulham", played: 32, won: 13, drawn: 7, lost: 12, points: 45, form: "LWLWD" },
+  { position: 11, team: "Crystal Palace", played: 32, won: 11, drawn: 10, lost: 11, points: 43, form: "DDLWW" },
+  { position: 12, team: "Brighton", played: 32, won: 18, drawn: 6, lost: 8, points: 34, form: "WLWDW" }
+];
+
+        // Function to generate team logo initials
+        function getTeamInitials(teamName) {
+            const words = teamName.split(' ');
+            if (words.length === 1) {
+                return words[0].substring(0, 2).toUpperCase();
+            }
+            return words.map(word => word[0]).join('').toUpperCase();
+        }
+
+        // Function to render the table
+        function renderTable(data) {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            
+            data.forEach((team, index) => {
+                const row = document.createElement('tr');
+                row.className = `pos-${team.position}`;
+                
+                row.innerHTML = `
+                    <td><span class="position">${team.position}</span></td>
+                    <td>
+                        <div class="team-cell">
+                            <div class="team-logo" style="background: linear-gradient(45deg, ${getRandomColor()}, ${getRandomColor()})">
+                                ${getTeamInitials(team.team)}
+                            </div>
+                            ${team.team}
+                        </div>
+                    </td>
+                    <td>${team.played}</td>
+                    <td>${team.won}</td>
+                    <td>${team.drawn}</td>
+                    <td>${team.lost}</td>
+                    <td class="points">${team.points}</td>
+                    <td>${renderForm(team.form)}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Function to render form indicators
+        function renderForm(formString) {
+            return formString.split('').map(result => {
+                let className = '';
+                if (result === 'W') className = 'form-w';
+                if (result === 'D') className = 'form-d';
+                if (result === 'L') className = 'form-l';
+                return `<span class="form-indicator ${className}">${result}</span>`;
+            }).join('');
+        }
+
+        // Function to generate random color
+        function getRandomColor() {
+            const colors = [
+                '#3498db', '#2ecc71', '#e74c3c', '#f39c12', 
+                '#9b59b6', '#1abc9c', '#34495e', '#e67e22'
+            ];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // Sorting functionality
+        let sortDirection = {};
+        
+        function sortTable(column) {
+            const currentDirection = sortDirection[column] || 'asc';
+            const newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
+            
+            // Reset all sort indicators
+            document.querySelectorAll('th').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+            });
+            
+            // Set sort direction for current column
+            sortDirection[column] = newDirection;
+            const th = document.querySelector(`th[data-sort="${column}"]`);
+            th.classList.add(newDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+            
+            // Sort the data
+            teams.sort((a, b) => {
+                let valA = a[column];
+                let valB = b[column];
+                
+                if (typeof valA === 'string') {
+                    valA = valA.toLowerCase();
+                    valB = valB.toLowerCase();
+                }
+                
+                if (newDirection === 'asc') {
+                    return valA > valB ? 1 : valA < valB ? -1 : 0;
+                } else {
+                    return valA < valB ? 1 : valA > valB ? -1 : 0;
+                }
+            });
+            
+            // Re-render table
+            renderTable(teams);
+        }
+
+        // Search functionality
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const filteredTeams = teams.filter(team => 
+                    team.team.toLowerCase().includes(searchTerm)
+                );
+                renderTable(filteredTeams);
+            });
+        }
+
+        // Add team functionality
+        function setupAddTeam() {
+            const addTeamBtn = document.getElementById('addTeamBtn');
+            addTeamBtn.addEventListener('click', function() {
+                const teamName = prompt("Enter team name:");
+                if (teamName) {
+                    const newTeam = {
+                        position: teams.length + 1,
+                        team: teamName,
+                        played: 0,
+                        won: 0,
+                        drawn: 0,
+                        lost: 0,
+                        points: 0,
+                        form: "-----"
+                    };
+                    teams.push(newTeam);
+                    renderTable(teams);
+                }
+            });
+        }
+
+        // Initialize the table
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTable(teams);
+            
+            // Add event listeners to sortable headers
+            document.querySelectorAll('th.sortable').forEach(th => {
+                th.addEventListener('click', function() {
+                    const column = this.getAttribute('data-sort');
+                    sortTable(column);
+                });
+            });
+            
+            setupSearch();
+            setupAddTeam();
+        });
+    </script>
+</body>
+</html>
