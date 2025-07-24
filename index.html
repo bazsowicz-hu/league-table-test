@@ -5,63 +5,387 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sortable League Table</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Global Styles & Reset */
+        .league-table-root *,
+        .league-table-root *::before,
+        .league-table-root *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .league-table-root {
+            background: linear-gradient(135deg, #1a2a6c, #2c3e50);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .league-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        .league-header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 20px;
+        }
+
+        .league-title {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .league-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Table Container */
+        .league-table-wrapper {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+
+        /* Table Styles */
+        .league-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .league-thead {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .league-th {
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.3s;
+        }
+
+        .league-th:first-child {
+            text-align: center;
+        }
+
+        .league-th:nth-child(n+3):nth-child(-n+7),
+        .league-th:last-child {
+            text-align: center;
+        }
+
+        .league-th:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .league-th.sortable::after {
+            content: "↕";
+            position: absolute;
+            right: 15px;
+            opacity: 0.5;
+            font-size: 0.9rem;
+        }
+
+        .league-th.sort-asc::after {
+            content: "↑";
+            opacity: 1;
+            color: #4CAF50;
+        }
+
+        .league-th.sort-desc::after {
+            content: "↓";
+            opacity: 1;
+            color: #f44336;
+        }
+
+        .league-tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background 0.2s;
+        }
+
+        .league-tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .league-td {
+            padding: 15px;
+            font-size: 1rem;
+        }
+
+        .league-td:first-child {
+            text-align: center;
+        }
+
+        .league-td:nth-child(n+3):nth-child(-n+7),
+        .league-td:last-child {
+            text-align: center;
+        }
+
+        /* Team Cell Elements */
+        .league-team-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .league-team-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #3498db, #8e44ad);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        .league-position {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+        }
+
+        .pos-1 .league-position {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+        }
+
+        .pos-2 .league-position {
+            background: linear-gradient(45deg, #C0C0C0, #A9A9A9);
+        }
+
+        .pos-3 .league-position {
+            background: linear-gradient(45deg, #CD7F32, #A0522D);
+        }
+
+        .league-points {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        /* Form Indicators */
+        .league-form-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            text-align: center;
+            line-height: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 3px;
+        }
+
+        .league-form-w {
+            background: #4CAF50;
+        }
+
+        .league-form-d {
+            background: #FFC107;
+            color: #333;
+        }
+
+        .league-form-l {
+            background: #f44336;
+        }
+
+        /* Controls */
+        .league-controls {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .league-search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .league-search-box input {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border-radius: 30px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .league-search-box input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .league-search-box i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .league-add-team {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .league-add-team:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Footer */
+        .league-footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .league-controls {
+                flex-direction: column;
+            }
+            
+            .league-title {
+                font-size: 2.2rem;
+            }
+            
+            .league-th, .league-td {
+                padding: 12px 8px;
+                font-size: 0.9rem;
+            }
+            
+            .league-team-cell {
+                gap: 8px;
+            }
+            
+            .league-team-logo {
+                width: 30px;
+                height: 30px;
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .league-table-root {
+                padding: 10px;
+            }
+            
+            .league-title {
+                font-size: 1.8rem;
+            }
+            
+            .league-subtitle {
+                font-size: 1rem;
+            }
+            
+            .league-th, .league-td {
+                padding: 10px 5px;
+                font-size: 0.8rem;
+            }
+            
+            .league-position {
+                width: 25px;
+                height: 25px;
+                line-height: 25px;
+                font-size: 0.8rem;
+            }
+            
+            .league-points {
+                font-size: 1rem;
+            }
+        }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <header>
-            <h1>Magyar Nemzeti E-sport Bajnokság - Rainbow Six Siege S47</h1>
-            <p class="subtitle">A tabella minden lejátszott forduló után frissül. Kattints bármelyik oszlopra a szűréshez.</p>
+<body class="league-table-root">
+    <div class="league-container">
+        <header class="league-header">
+            <h1 class="league-title">Magyar Nemzeti E-sport Bajnokság - Rainbow Six Siege S47</h1>
+            <p class="league-subtitle">A tabella minden lejátszott forduló után frissül. Kattints bármelyik oszlopra a szűréshez.</p>
         </header>
         
-        <div class="controls">
-            <div class="search-box">
+        <div class="league-controls">
+            <div class="league-search-box">
                 <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Search teams...">
+                <input type="text" id="league-searchInput" placeholder="Search teams...">
             </div>
         </div>
         
-        <div class="table-container">
-            <table id="leagueTable">
-                <thead>
+        <div class="league-table-wrapper">
+            <table class="league-table" id="league-table">
+                <thead class="league-thead">
                     <tr>
-                        <th class="sortable" data-sort="position">Helyezés</th>
-                        <th class="sortable" data-sort="team">Csapat</th>
-                        <th class="sortable" data-sort="played">M</th>
-                        <th class="sortable" data-sort="won">GY</th>
-                        <th class="sortable" data-sort="drawn">D</th>
-                        <th class="sortable" data-sort="lost">V</th>
-                        <th class="sortable" data-sort="points">Pont</th>
-                        <th class="sortable" data-sort="form">Forma</th>
+                        <th class="league-th sortable" data-sort="position">Helyezés</th>
+                        <th class="league-th sortable" data-sort="team">Csapat</th>
+                        <th class="league-th sortable" data-sort="played">M</th>
+                        <th class="league-th sortable" data-sort="won">GY</th>
+                        <th class="league-th sortable" data-sort="drawn">D</th>
+                        <th class="league-th sortable" data-sort="lost">V</th>
+                        <th class="league-th sortable" data-sort="points">Pont</th>
+                        <th class="league-th sortable" data-sort="form">Forma</th>
                     </tr>
                 </thead>
-                <tbody id="tableBody">
+                <tbody class="league-tbody" id="league-tableBody">
                     <!-- Table rows will be generated by JavaScript -->
                 </tbody>
             </table>
         </div>
         
-        <footer>
+        <footer class="league-footer">
             <p>Magyar E-sport Szövetség &copy; 2025 | Magyar Nemzeti E-sport Bajnokság</p>
         </footer>
     </div>
 
     <script>
         // Sample data for league table
-const teams = [
-  { position: 1, team: "Orion Wanderers", played: 32, won: 23, drawn: 4, lost: 5, points: 73, form: "WLWWW" },
-  { position: 2, team: "WiLD MultiGaming", played: 32, won: 11, drawn: 9, lost: 12, points: 67, form: "LDDLD" },
-  { position: 3, team: "Spirit Esports", played: 32, won: 18, drawn: 8, lost: 6, points: 62, form: "WWDDL" },
-  { position: 4, team: "Homeless", played: 32, won: 17, drawn: 6, lost: 9, points: 57, form: "WLWLD" },
-  { position: 5, team: "Delta Syndicate", played: 32, won: 19, drawn: 8, lost: 5, points: 56, form: "DWLWD" },
-  { position: 6, team: "MTK Budapest", played: 32, won: 17, drawn: 5, lost: 10, points: 56, form: "LWWLD" },
-  { position: 7, team: "Békéscsabai E-sport Egyesület", played: 32, won: 14, drawn: 10, lost: 8, points: 52, form: "DWDWL" },
-  { position: 8, team: "Spirit Gaming", played: 32, won: 13, drawn: 7, lost: 12, points: 45, form: "LWLWD" },
-  { position: 9, team: "Alibi Clones", played: 32, won: 20, drawn: 4, lost: 8, points: 45, form: "WLDWW" },
-  { position: 10, team: "Spirit Gaming Academy", played: 32, won: 25, drawn: 3, lost: 4, points: 45, form: "WWLWW" },
-  { position: 11, team: "Honvéd", played: 32, won: 11, drawn: 10, lost: 11, points: 43, form: "DDLWW" },
-  { position: 12, team: "Goofergooners", played: 32, won: 18, drawn: 6, lost: 8, points: 34, form: "WLWDW" }
-];
+        const teams = [
+          { position: 1, team: "Orion Wanderers", played: 32, won: 23, drawn: 4, lost: 5, points: 73, form: "WLWWW" },
+          { position: 2, team: "WiLD MultiGaming", played: 32, won: 11, drawn: 9, lost: 12, points: 67, form: "LDDLD" },
+          { position: 3, team: "Spirit Esports", played: 32, won: 18, drawn: 8, lost: 6, points: 62, form: "WWDDL" },
+          { position: 4, team: "Homeless", played: 32, won: 17, drawn: 6, lost: 9, points: 57, form: "WLWLD" },
+          { position: 5, team: "Delta Syndicate", played: 32, won: 19, drawn: 8, lost: 5, points: 56, form: "DWLWD" },
+          { position: 6, team: "MTK Budapest", played: 32, won: 17, drawn: 5, lost: 10, points: 56, form: "LWWLD" },
+          { position: 7, team: "Békéscsabai E-sport Egyesület", played: 32, won: 14, drawn: 10, lost: 8, points: 52, form: "DWDWL" },
+          { position: 8, team: "Spirit Gaming", played: 32, won: 13, drawn: 7, lost: 12, points: 45, form: "LWLWD" },
+          { position: 9, team: "Alibi Clones", played: 32, won: 20, drawn: 4, lost: 8, points: 45, form: "WLDWW" },
+          { position: 10, team: "Spirit Gaming Academy", played: 32, won: 25, drawn: 3, lost: 4, points: 45, form: "WWLWW" },
+          { position: 11, team: "Honvéd", played: 32, won: 11, drawn: 10, lost: 11, points: 43, form: "DDLWW" },
+          { position: 12, team: "Goofergooners", played: 32, won: 18, drawn: 6, lost: 8, points: 34, form: "WLWDW" }
+        ];
+        
         // Function to generate team logo initials
         function getTeamInitials(teamName) {
             const words = teamName.split(' ');
@@ -73,7 +397,7 @@ const teams = [
 
         // Function to render the table
         function renderTable(data) {
-            const tableBody = document.getElementById('tableBody');
+            const tableBody = document.getElementById('league-tableBody');
             tableBody.innerHTML = '';
             
             data.forEach((team, index) => {
@@ -81,21 +405,21 @@ const teams = [
                 row.className = `pos-${team.position}`;
                 
                 row.innerHTML = `
-                    <td><span class="position">${team.position}</span></td>
-                    <td>
-                        <div class="team-cell">
-                            <div class="team-logo" style="background: linear-gradient(45deg, ${getRandomColor()}, ${getRandomColor()})">
+                    <td class="league-td"><span class="league-position">${team.position}</span></td>
+                    <td class="league-td">
+                        <div class="league-team-cell">
+                            <div class="league-team-logo" style="background: linear-gradient(45deg, ${getRandomColor()}, ${getRandomColor()})">
                                 ${getTeamInitials(team.team)}
                             </div>
                             ${team.team}
                         </div>
                     </td>
-                    <td>${team.played}</td>
-                    <td>${team.won}</td>
-                    <td>${team.drawn}</td>
-                    <td>${team.lost}</td>
-                    <td class="points">${team.points}</td>
-                    <td>${renderForm(team.form)}</td>
+                    <td class="league-td">${team.played}</td>
+                    <td class="league-td">${team.won}</td>
+                    <td class="league-td">${team.drawn}</td>
+                    <td class="league-td">${team.lost}</td>
+                    <td class="league-td league-points">${team.points}</td>
+                    <td class="league-td">${renderForm(team.form)}</td>
                 `;
                 
                 tableBody.appendChild(row);
@@ -106,10 +430,10 @@ const teams = [
         function renderForm(formString) {
             return formString.split('').map(result => {
                 let className = '';
-                if (result === 'W') className = 'form-w';
-                if (result === 'D') className = 'form-d';
-                if (result === 'L') className = 'form-l';
-                return `<span class="form-indicator ${className}">${result}</span>`;
+                if (result === 'W') className = 'league-form-w';
+                if (result === 'D') className = 'league-form-d';
+                if (result === 'L') className = 'league-form-l';
+                return `<span class="league-form-indicator ${className}">${result}</span>`;
             }).join('');
         }
 
@@ -130,13 +454,13 @@ const teams = [
             const newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
             
             // Reset all sort indicators
-            document.querySelectorAll('th').forEach(th => {
+            document.querySelectorAll('.league-th').forEach(th => {
                 th.classList.remove('sort-asc', 'sort-desc');
             });
             
             // Set sort direction for current column
             sortDirection[column] = newDirection;
-            const th = document.querySelector(`th[data-sort="${column}"]`);
+            const th = document.querySelector(`.league-th[data-sort="${column}"]`);
             th.classList.add(newDirection === 'asc' ? 'sort-asc' : 'sort-desc');
             
             // Sort the data
@@ -162,7 +486,7 @@ const teams = [
 
         // Search functionality
         function setupSearch() {
-            const searchInput = document.getElementById('searchInput');
+            const searchInput = document.getElementById('league-searchInput');
             searchInput.addEventListener('input', function() {
                 const searchTerm = this.value.toLowerCase();
                 const filteredTeams = teams.filter(team => 
@@ -177,7 +501,7 @@ const teams = [
             renderTable(teams);
             
             // Add event listeners to sortable headers
-            document.querySelectorAll('th.sortable').forEach(th => {
+            document.querySelectorAll('.league-th.sortable').forEach(th => {
                 th.addEventListener('click', function() {
                     const column = this.getAttribute('data-sort');
                     sortTable(column);
