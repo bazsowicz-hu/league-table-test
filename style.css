@@ -1,28 +1,323 @@
+/* Global Styles & Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 body {
-	padding: 2rem;
-	font-family: -apple-system, BlinkMacSystemFont, "Arial", sans-serif;
+    background: linear-gradient(135deg, #1a2a6c, #2c3e50);
+    color: #fff;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Header Styles */
+header {
+    text-align: center;
+    padding: 30px 0;
+    margin-bottom: 20px;
 }
 
 h1 {
-	font-size: 16px;
-	margin-top: 0;
+    font-size: 2.8rem;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-p {
-	color: rgb(107, 114, 128);
-	font-size: 15px;
-	margin-bottom: 10px;
-	margin-top: 5px;
+.subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
-.card {
-	max-width: 620px;
-	margin: 0 auto;
-	padding: 16px;
-	border: 1px solid lightgray;
-	border-radius: 16px;
+/* Table Container */
+.table-container {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    margin-bottom: 30px;
+    overflow-x: auto;
 }
 
-.card p:last-child {
-	margin-bottom: 0;
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
 }
+
+thead {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+th {
+    padding: 18px 15px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.3s;
+}
+
+th:first-child {
+    text-align: center;
+}
+
+th:nth-child(n+3):nth-child(-n+7),
+th:last-child {
+    text-align: center;
+}
+
+th:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+th.sortable::after {
+    content: "↕";
+    position: absolute;
+    right: 15px;
+    opacity: 0.5;
+    font-size: 0.9rem;
+}
+
+th.sort-asc::after {
+    content: "↑";
+    opacity: 1;
+    color: #4CAF50;
+}
+
+th.sort-desc::after {
+    content: "↓";
+    opacity: 1;
+    color: #f44336;
+}
+
+tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s;
+}
+
+tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+td {
+    padding: 15px;
+    font-size: 1rem;
+}
+
+td:first-child {
+    text-align: center;
+}
+
+td:nth-child(n+3):nth-child(-n+7),
+td:last-child {
+    text-align: center;
+}
+
+/* Team Cell Elements */
+.team-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.team-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #3498db, #8e44ad);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.position {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    text-align: center;
+    line-height: 30px;
+    font-weight: bold;
+}
+
+.pos-1 .position {
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+}
+
+.pos-2 .position {
+    background: linear-gradient(45deg, #C0C0C0, #A9A9A9);
+}
+
+.pos-3 .position {
+    background: linear-gradient(45deg, #CD7F32, #A0522D);
+}
+
+.points {
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+/* Form Indicators */
+.form-indicator {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    text-align: center;
+    line-height: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-right: 3px;
+}
+
+.form-w {
+    background: #4CAF50;
+}
+
+.form-d {
+    background: #FFC107;
+    color: #333;
+}
+
+.form-l {
+    background: #f44336;
+}
+
+/* Controls */
+.controls {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.search-box {
+    flex: 1;
+    min-width: 250px;
+    position: relative;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 12px 20px 12px 45px;
+    border-radius: 30px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1rem;
+}
+
+.search-box input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.search-box i {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.add-team {
+    background: linear-gradient(45deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 30px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.add-team:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .controls {
+        flex-direction: column;
+    }
+    
+    h1 {
+        font-size: 2.2rem;
+    }
+    
+    th, td {
+        padding: 12px 8px;
+        font-size: 0.9rem;
+    }
+    
+    .team-cell {
+        gap: 8px;
+    }
+    
+    .team-logo {
+        width: 30px;
+        height: 30px;
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    .subtitle {
+        font-size: 1rem;
+    }
+    
+    th, td {
+        padding: 10px 5px;
+        font-size: 0.8rem;
+    }
+    
+    .position {
+        width: 25px;
+        height: 25px;
+        line-height: 25px;
+        font-size: 0.8rem;
+    }
+    
+    .points {
+        font-size: 1rem;
+    }
+}
+·
+Built with Gradio logo
+·
