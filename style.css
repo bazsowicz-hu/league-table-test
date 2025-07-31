@@ -1,13 +1,3 @@
- /* Global Styles & Reset */
-        .league-table-root *,
-        .league-table-root *::before,
-        .league-table-root *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
         .league-table-root {
             background: #ffffff;
             color: #333;
