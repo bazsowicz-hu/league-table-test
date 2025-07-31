@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sortable League Table</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* Global Styles & Reset */
@@ -17,8 +18,8 @@
         }
 
         .league-table-root {
-            background: linear-gradient(135deg, #1a2a6c, #2c3e50);
-            color: #fff;
+            background: #ffffff;
+            color: #333;
             min-height: 100vh;
             padding: 20px;
         }
@@ -38,26 +39,28 @@
         .league-title {
             font-size: 2.8rem;
             margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            color: #222;
         }
 
         .league-subtitle {
             font-size: 1.2rem;
-            opacity: 0.9;
+            opacity: 0.8;
             max-width: 600px;
             margin: 0 auto;
+            color: #555;
         }
 
         /* Table Container */
         .league-table-wrapper {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(10px);
+            background: #f8f9fa;
             border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: visible;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
             margin-bottom: 30px;
-            overflow-x: auto;
+            border: 1px solid #e1e1e1;
+            position: relative;
         }
+
 
         /* Table Styles */
         .league-table {
@@ -67,7 +70,7 @@
         }
 
         .league-thead {
-            background: rgba(0, 0, 0, 0.2);
+            background: #e9ecef;
         }
 
         .league-th {
@@ -78,6 +81,8 @@
             cursor: pointer;
             position: relative;
             transition: background 0.3s;
+            border-bottom: 1px solid #ddd;
+            color: #222;
         }
 
         .league-th:first-child {
@@ -90,7 +95,11 @@
         }
 
         .league-th:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: #dde1e5;
+        }
+
+        .league-th.sortable {
+            padding-right: 35px;
         }
 
         .league-th.sortable::after {
@@ -99,41 +108,45 @@
             right: 15px;
             opacity: 0.5;
             font-size: 0.9rem;
+            color: #666;
         }
 
         .league-th.sort-asc::after {
             content: "↑";
             opacity: 1;
-            color: #4CAF50;
+            color: #333;
         }
 
         .league-th.sort-desc::after {
             content: "↓";
             opacity: 1;
-            color: #f44336;
+            color: #333;
         }
 
         .league-tbody tr {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid #eee;
             transition: background 0.2s;
         }
 
         .league-tbody tr:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: #f1f3f5;
         }
 
         .league-td {
             padding: 15px;
             font-size: 1rem;
+            color: #444;
         }
 
         .league-td:first-child {
             text-align: center;
+            vertical-align: middle;
         }
 
         .league-td:nth-child(n+3):nth-child(-n+7),
         .league-td:last-child {
             text-align: center;
+            vertical-align: middle;
         }
 
         /* Team Cell Elements */
@@ -147,12 +160,21 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: linear-gradient(45deg, #3498db, #8e44ad);
+            background: linear-gradient(45deg, #adb5bd, #ced4da);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
             font-size: 0.8rem;
+            border: 1px solid #ced4da;
+            color: #495057;
+            flex-shrink: 0;
+        }
+
+        .league-team-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .league-position {
@@ -160,27 +182,34 @@
             width: 30px;
             height: 30px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
+            background: #e9ecef;
             text-align: center;
             line-height: 30px;
             font-weight: bold;
+            border: 1px solid #ced4da;
+            color: #495057;
+            margin: 0 auto;
         }
 
         .pos-1 .league-position {
             background: linear-gradient(45deg, #FFD700, #FFA500);
+            border: 1px solid #e6c000;
         }
 
         .pos-2 .league-position {
             background: linear-gradient(45deg, #C0C0C0, #A9A9A9);
+            border: 1px solid #b0b0b0;
         }
 
         .pos-3 .league-position {
             background: linear-gradient(45deg, #CD7F32, #A0522D);
+            border: 1px solid #bc702a;
         }
 
         .league-points {
             font-weight: 700;
             font-size: 1.2rem;
+            color: #222;
         }
 
         /* Form Indicators */
@@ -198,6 +227,7 @@
 
         .league-form-w {
             background: #4CAF50;
+            color: #fff;
         }
 
         .league-form-d {
@@ -207,62 +237,21 @@
 
         .league-form-l {
             background: #f44336;
+            color: #fff;
         }
 
-        /* Controls */
-        .league-controls {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 20px;
+        /* Mobile header */
+        .mobile-header {
+            display: none;
         }
-
-        .league-search-box {
-            flex: 1;
-            min-width: 250px;
-            position: relative;
-        }
-
-        .league-search-box input {
-            width: 100%;
-            padding: 12px 20px 12px 45px;
-            border-radius: 30px;
-            border: none;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 1rem;
-        }
-
-        .league-search-box input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .league-search-box i {
-            position: absolute;
-            left: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .league-add-team {
-            background: linear-gradient(45deg, #3498db, #2980b9);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 30px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .league-add-team:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        
+        @media (max-width: 768px) {
+            .position-header-original {
+                display: none;
+            }
+            .mobile-header {
+                display: inline;
+            }
         }
 
         /* Footer */
@@ -271,21 +260,36 @@
             padding: 20px;
             font-size: 0.9rem;
             opacity: 0.7;
+            color: #666;
         }
 
         /* Responsive Design */
-        @media (max-width: 768px) {
-            .league-controls {
-                flex-direction: column;
-            }
-            
+        @media (max-width: 960px) {
             .league-title {
                 font-size: 2.2rem;
+            }
+            
+            .league-table-wrapper {
+                overflow-x: auto;
+                overflow-y: scroll;
+                -webkit-overflow-scrolling: touch;
+                max-height: 400px;
+                scrollbar-width: auto;
+                scrollbar-color: #adb5bd #f1f3f5;
             }
             
             .league-th, .league-td {
                 padding: 12px 8px;
                 font-size: 0.9rem;
+            }
+            
+            .league-th.sortable {
+                padding-right: 30px;
+            }
+            
+            .league-th.sortable::after {
+                right: 10px;
+                font-size: 0.8rem;
             }
             
             .league-team-cell {
@@ -296,6 +300,25 @@
                 width: 30px;
                 height: 30px;
                 font-size: 0.7rem;
+            }
+            
+            .league-position {
+                width: 25px;
+                height: 25px;
+                line-height: 25px;
+                font-size: 0.8rem;
+            }
+            
+            .position-header-original {
+                display: none;
+            }
+            
+            .mobile-header {
+                display: inline;
+            }
+            
+            .league-team-name {
+                max-width: 120px;
             }
         }
 
@@ -317,6 +340,15 @@
                 font-size: 0.8rem;
             }
             
+            .league-th.sortable {
+                padding-right: 25px;
+            }
+            
+            .league-th.sortable::after {
+                right: 8px;
+                font-size: 0.7rem;
+            }
+            
             .league-position {
                 width: 25px;
                 height: 25px;
@@ -326,6 +358,22 @@
             
             .league-points {
                 font-size: 1rem;
+            }
+            
+            .league-form-indicator {
+                width: 18px;
+                height: 18px;
+                line-height: 18px;
+                font-size: 0.7rem;
+            }
+            
+            .league-team-name {
+                max-width: 100px;
+            }
+            
+            .mobile-scroll-indicator {
+                font-size: 0.7rem;
+                bottom: -18px;
             }
         }
     </style>
@@ -337,18 +385,14 @@
             <p class="league-subtitle">A tabella minden lejátszott forduló után frissül. Kattints bármelyik oszlopra a szűréshez.</p>
         </header>
         
-        <div class="league-controls">
-            <div class="league-search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="league-searchInput" placeholder="Search teams...">
-            </div>
-        </div>
-        
         <div class="league-table-wrapper">
             <table class="league-table" id="league-table">
                 <thead class="league-thead">
                     <tr>
-                        <th class="league-th sortable" data-sort="position">Helyezés</th>
+                        <th class="league-th sortable" data-sort="position">
+                            <span class="position-header-original">Helyezés</span>
+                            <span class="mobile-header">#</span>
+                        </th>
                         <th class="league-th sortable" data-sort="team">Csapat</th>
                         <th class="league-th sortable" data-sort="played">M</th>
                         <th class="league-th sortable" data-sort="won">GY</th>
@@ -394,6 +438,14 @@
             }
             return words.map(word => word[0]).join('').toUpperCase();
         }
+        
+        // Function to truncate team name for mobile
+        function truncateTeamName(name, maxLength = 15) {
+            if (window.innerWidth <= 960 && name.length > maxLength) {
+                return name.substring(0, maxLength - 3) + '...';
+            }
+            return name;
+        }
 
         // Function to render the table
         function renderTable(data) {
@@ -408,10 +460,10 @@
                     <td class="league-td"><span class="league-position">${team.position}</span></td>
                     <td class="league-td">
                         <div class="league-team-cell">
-                            <div class="league-team-logo" style="background: linear-gradient(45deg, ${getRandomColor()}, ${getRandomColor()})">
+                            <div class="league-team-logo" style="background: linear-gradient(45deg, #adb5bd, #ced4da)">
                                 ${getTeamInitials(team.team)}
                             </div>
-                            ${team.team}
+                            <span class="league-team-name">${truncateTeamName(team.team)}</span>
                         </div>
                     </td>
                     <td class="league-td">${team.played}</td>
@@ -440,8 +492,8 @@
         // Function to generate random color
         function getRandomColor() {
             const colors = [
-                '#3498db', '#2ecc71', '#e74c3c', '#f39c12', 
-                '#9b59b6', '#1abc9c', '#34495e', '#e67e22'
+                '#adb5bd', '#ced4da', '#dee2e6', '#e9ecef', 
+                '#f1f3f5', '#f8f9fa', '#ffffff', '#e9ecef'
             ];
             return colors[Math.floor(Math.random() * colors.length)];
         }
@@ -484,18 +536,6 @@
             renderTable(teams);
         }
 
-        // Search functionality
-        function setupSearch() {
-            const searchInput = document.getElementById('league-searchInput');
-            searchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                const filteredTeams = teams.filter(team => 
-                    team.team.toLowerCase().includes(searchTerm)
-                );
-                renderTable(filteredTeams);
-            });
-        }
-
         // Initialize the table
         document.addEventListener('DOMContentLoaded', function() {
             renderTable(teams);
@@ -508,7 +548,10 @@
                 });
             });
             
-            setupSearch();
+            // Handle window resize for team name truncation
+            window.addEventListener('resize', function() {
+                renderTable(teams);
+            });
         });
     </script>
 </body>
